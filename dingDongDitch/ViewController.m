@@ -56,14 +56,33 @@
 	coordinateRegion.span.longitudeDelta = 0.01;
 	[mapView setRegion:coordinateRegion animated:NO];
 	[self.view addSubview:mapView];
+	
+	// call method per one sec
+	NSTimer *tm = [NSTimer scheduledTimerWithTimeInterval:1.0f target:self selector:@selector(foo:) userInfo:nil repeats:YES];
+	
+	[mapView addAnnotation:
+	 [[CustomAnnotation alloc]initWithLocationCoordinate:CLLocationCoordinate2DMake(35.656281,139.694568)
+																									title:@"50Point"
+																							 subtitle:@"Sato's house"]];
 }
 
+-(void)foo:(NSTimer*)timer{
+	NSLog(@"foo");
+	[self bar:currentLocation.coordinate.latitude :currentLocation.coordinate.longitude];
+}
+
+-(void)bar:(double)longitude
+					:(double)latitude{
+	NSLog(@"bar");
+	NSLog(@"%f - %f", longitude, latitude);
+}
 
 - (void)locationManager:(CLLocationManager *)manager
 		didUpdateToLocation:(CLLocation *)newLocation
 					 fromLocation:(CLLocation *)oldLocation{
 	NSLog(@"sweet");
 	// 位置情報取得
+	currentLocation = newLocation;
 	[mapView setCenterCoordinate:newLocation.coordinate animated:YES];
 //	// ロケーションマネージャ停止
 //	[locationManager stopUpdatingLocation];
