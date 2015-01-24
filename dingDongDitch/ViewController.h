@@ -11,12 +11,14 @@
 #import <CoreLocation/CoreLocation.h>
 #import "CustomAnnotation.h"
 #import "CustomAnnotationView.h"
+#import "ResultViewController.h"
 @interface ViewController : UIViewController<MKMapViewDelegate, CLLocationManagerDelegate>{
 	CLLocationManager* locationManager;
 	MKMapView *mapView;
 	CLLocation *currentLocation;
 	UIImageView *userStatusImageView;
 	UIImage *userStatusImage;
+	bool winOrLose;
 }
 
 

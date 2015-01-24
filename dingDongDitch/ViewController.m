@@ -57,7 +57,9 @@
 	[self.view addSubview:mapView];
 	
 	// call method per one sec
-	//	 NSTimer *tm = [NSTimer scheduledTimerWithTimeInterval:1.0f target:self selector:@selector(loopMethod:) userInfo:nil repeats:YES];
+//	NSTimer *tm = [NSTimer scheduledTimerWithTimeInterval:1.0f target:self selector:@selector(loopMethod:) userInfo:nil repeats:YES];
+//	NSTimer *tm2 = [NSTimer scheduledTimerWithTimeInterval:15.0f target:self selector:@selector(showLoseResultView) userInfo:nil repeats:false];
+//	NSTimer *tm3 = [NSTimer scheduledTimerWithTimeInterval:25.0f target:self selector:@selector(showWinResultView) userInfo:nil repeats:false];
 	
 	[mapView addAnnotation:
 	 [[CustomAnnotation alloc]initWithLocationCoordinate:CLLocationCoordinate2DMake(35.656281,139.694568)
@@ -90,11 +92,24 @@
 	[userStatusImageView setImage:userStatusImage];
 	[self.view addSubview:userStatusImageView];
 	
+	// debug button
+	// - show lose button (left side)
+	UIButton *button = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+	winOrLose = false;
+	[button setFrame:CGRectMake(0, 0, 100, 100)];
+	[button addTarget:self action:@selector(showLoseResultView) forControlEvents:UIControlEventTouchUpInside];
+	[self.view addSubview:button];
+	// - show win button (right side)
+	UIButton *buttonForWin = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+	[buttonForWin setFrame:CGRectMake(self.view.frame.size.width-100, 0, 100, 100)];
+	[buttonForWin addTarget:self action:@selector(showWinResultView) forControlEvents:UIControlEventTouchUpInside];
+	[self.view addSubview:buttonForWin];
 }
 
 -(void)loopMethod:(NSTimer*)timer{
 	NSLog(@"loopMethod");
-	[self sendGPS:currentLocation.coordinate.latitude longitude:currentLocation.coordinate.longitude];
+//	[self sendGPS:currentLocation.coordinate.latitude longitude:currentLocation.coordinate.longitude];
+//	[self getResult:currentLocation.coordinate.latitude longitude:currentLocation.coordinate.longitude];
 }
 
 -(void)sendGPS:(double)latitude longitude:(double)longitude{
@@ -107,7 +122,29 @@
 	
 	NSData *returnData = [NSURLConnection sendSynchronousRequest:request returningResponse:nil error:nil];
 	NSString *returnString = [[NSString alloc] initWithData:returnData encoding:NSUTF8StringEncoding];
-	NSLog(@"RETURNED:%@",returnString);
+	NSLog(@"sendGPS - RETURNED:%@",returnString);
+}
+
+-(void)getResult:(double)latitude longitude:(double)longitude{
+	NSLog(@"getResult");
+	NSURL *loginUrl = [NSURL URLWithString:@"http://172.16.42.68/result"];
+	NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:loginUrl cachePolicy:NSURLRequestUseProtocolCachePolicy timeoutInterval:5.0];
+	
+	[request setHTTPMethod:@"POST"];
+	NSString *postString = [NSString stringWithFormat:@"latitude=%f&longitude=%f",latitude,longitude];
+	[request setHTTPBody:[postString dataUsingEncoding:NSUTF8StringEncoding]];
+	
+	NSData *returnData = [NSURLConnection sendSynchronousRequest:request returningResponse:nil error:nil];
+	NSString *returnString = [[NSString alloc] initWithData:returnData encoding:NSUTF8StringEncoding];
+	NSLog(@"getResult - RETURNED:%@",returnString);
+	
+	NSArray* values = [returnString componentsSeparatedByString:@","];
+	NSLog(@"%@", values);
+	if ([values[0] isEqualToString:@"-1"]) {
+		NSLog(@"do nothing");
+	}else{
+		NSLog(@"judge");
+	}
 }
 
 - (void)locationManager:(CLLocationManager *)manager
@@ -163,6 +200,18 @@
 	// Dispose of any resources that can be recreated.
 }
 
+-(void)showLoseResultView{
+	ResultViewController *resultViewController;
+	resultViewController = [[ResultViewController alloc] init];
+	[resultViewController updateResultView:false];
+	[self presentViewController:resultViewController animated:YES completion:nil];
+}
 
+-(void)showWinResultView{
+	ResultViewController *resultViewController;
+	resultViewController = [[ResultViewController alloc] init];
+	[resultViewController updateResultView:true];
+	[self presentViewController:resultViewController animated:YES completion:nil];
+}
 
 @end
