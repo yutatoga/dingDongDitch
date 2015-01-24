@@ -41,6 +41,7 @@
 	
 	// map setting
 	mapView = [[MKMapView alloc] init];
+	mapView.delegate = self;
 	mapView.showsUserLocation = YES;
 	mapView.mapType = MKMapTypeSatellite;
 	mapView.frame = 	self.view.frame;
@@ -52,13 +53,13 @@
 	// - region setting
 	MKCoordinateRegion coordinateRegion = mapView.region;
 	coordinateRegion.center = coordinate;
-	coordinateRegion.span.latitudeDelta = 0.01;
-	coordinateRegion.span.longitudeDelta = 0.01;
+	coordinateRegion.span.latitudeDelta = 0.005;
+	coordinateRegion.span.longitudeDelta = 0.005;
 	[mapView setRegion:coordinateRegion animated:NO];
 	[self.view addSubview:mapView];
 	
 	// call method per one sec
-	NSTimer *tm = [NSTimer scheduledTimerWithTimeInterval:1.0f target:self selector:@selector(foo:) userInfo:nil repeats:YES];
+	// NSTimer *tm = [NSTimer scheduledTimerWithTimeInterval:1.0f target:self selector:@selector(loopMethod:) userInfo:nil repeats:YES];
 	
 	[mapView addAnnotation:
 	 [[CustomAnnotation alloc]initWithLocationCoordinate:CLLocationCoordinate2DMake(35.656281,139.694568)
@@ -66,15 +67,22 @@
 																							 subtitle:@"Sato's house"]];
 }
 
--(void)foo:(NSTimer*)timer{
-	NSLog(@"foo");
-	[self bar:currentLocation.coordinate.latitude :currentLocation.coordinate.longitude];
+-(void)loopMethod:(NSTimer*)timer{
+	NSLog(@"loopMethod");
+	[self sendGPS:currentLocation.coordinate.latitude longitude:currentLocation.coordinate.longitude];
 }
 
--(void)bar:(double)longitude
-					:(double)latitude{
-	NSLog(@"bar");
-	NSLog(@"%f - %f", longitude, latitude);
+-(void)sendGPS:(double)latitude longitude:(double)longitude{
+	NSURL *loginUrl = [NSURL URLWithString:@"http://172.16.42.52:3000/gps"];
+	NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:loginUrl cachePolicy:NSURLRequestUseProtocolCachePolicy timeoutInterval:60.0];
+	
+	[request setHTTPMethod:@"POST"];
+	NSString *postString = [NSString stringWithFormat:@"latitude=%f&longitude=%f",latitude,longitude];
+	[request setHTTPBody:[postString dataUsingEncoding:NSUTF8StringEncoding]];
+	
+	NSData *returnData = [NSURLConnection sendSynchronousRequest:request returningResponse:nil error:nil];
+	NSString *returnString = [[NSString alloc] initWithData:returnData encoding:NSUTF8StringEncoding];
+	NSLog(@"RETURNED:%@",returnString);
 }
 
 - (void)locationManager:(CLLocationManager *)manager
@@ -86,6 +94,26 @@
 	[mapView setCenterCoordinate:newLocation.coordinate animated:YES];
 //	// ロケーションマネージャ停止
 //	[locationManager stopUpdatingLocation];
+}
+
+-(MKAnnotationView*)mapView:(MKMapView*)mapView
+					viewForAnnotation:(id <MKAnnotation>)annotation {
+	if (annotation == mapView.userLocation) { //……【2】
+		return nil;
+	} else {
+		CustomAnnotationView *annotationView;
+		NSString* identifier = @"customAnnotation"; // 再利用時の識別子
+		
+		// 再利用可能な MKAnnotationView を取得
+		annotationView = (CustomAnnotationView*)[mapView dequeueReusableAnnotationViewWithIdentifier:identifier];
+		
+		if(nil == annotationView) {
+			//再利用可能な MKAnnotationView がなければ新規作成
+			annotationView = [[CustomAnnotationView alloc] initWithAnnotation:annotation reuseIdentifier:identifier];
+		}
+		annotationView.annotation = annotation;
+		return annotationView;
+	}
 }
 
 - (void)didReceiveMemoryWarning {

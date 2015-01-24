@@ -10,6 +10,7 @@
 #import <MapKit/MapKit.h>
 #import <CoreLocation/CoreLocation.h>
 #import "CustomAnnotation.h"
+#import "CustomAnnotationView.h"
 @interface ViewController : UIViewController<MKMapViewDelegate, CLLocationManagerDelegate>{
 	CLLocationManager* locationManager;
 	MKMapView *mapView;

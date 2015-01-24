@@ -1,0 +1,10 @@
+.DS_Store
+Build/
+dingDongDitch.xcodeproj/
+dingDongDitch/AppDelegate.h
+dingDongDitch/AppDelegate.m
+dingDongDitch/Base.lproj/
+dingDongDitch/Images.xcassets/
+dingDongDitch/Info.plist
+dingDongDitch/main.m
+dingDongDitchTests/
