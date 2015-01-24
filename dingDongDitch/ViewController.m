@@ -17,14 +17,12 @@
 - (void)viewDidLoad {
 	[super viewDidLoad];
 	
-	
 	locationManager = [[CLLocationManager alloc] init];
 	locationManager.delegate = self;
 	[locationManager startUpdatingLocation];
 	locationManager.desiredAccuracy = kCLLocationAccuracyBestForNavigation;
 	locationManager.distanceFilter = kCLDistanceFilterNone;
 	if( [[[UIDevice currentDevice] systemVersion] floatValue] >= 8.0 ) {
-		NSLog(@"cattt");
 		// iOS8の場合は、以下の何れかの処理を追加しないと位置の取得ができない
 		// アプリがアクティブな場合だけ位置取得する場合
 		// [locationManager requestWhenInUseAuthorization];
@@ -44,7 +42,7 @@
 	mapView.delegate = self;
 	mapView.showsUserLocation = YES;
 	mapView.mapType = MKMapTypeSatellite;
-	mapView.frame = 	self.view.frame;
+	mapView.frame = CGRectMake(0, 95, self.view.frame.size.width, self.view.frame.size.height-95);
 	// - coordinate setting
 	CLLocationCoordinate2D coordinate;
 	coordinate.latitude = 35.68664111;
@@ -59,12 +57,39 @@
 	[self.view addSubview:mapView];
 	
 	// call method per one sec
-	// NSTimer *tm = [NSTimer scheduledTimerWithTimeInterval:1.0f target:self selector:@selector(loopMethod:) userInfo:nil repeats:YES];
+	//	 NSTimer *tm = [NSTimer scheduledTimerWithTimeInterval:1.0f target:self selector:@selector(loopMethod:) userInfo:nil repeats:YES];
 	
 	[mapView addAnnotation:
 	 [[CustomAnnotation alloc]initWithLocationCoordinate:CLLocationCoordinate2DMake(35.656281,139.694568)
-																									title:@"50Point"
-																							 subtitle:@"Sato's house"]];
+																								 title:@"Sato's house"
+																							subtitle:@""
+																								 point:42]];
+	
+	[mapView addAnnotation:
+	 [[CustomAnnotation alloc]initWithLocationCoordinate:CLLocationCoordinate2DMake(35.654515,139.695319)
+																								 title:@"John's house"
+																							subtitle:@""
+																								 point:42]];
+	
+	[mapView addAnnotation:
+	 [[CustomAnnotation alloc]initWithLocationCoordinate:CLLocationCoordinate2DMake(35.657763,139.695083)
+																								 title:@"Kato's house"
+																							subtitle:@""
+																								 point:42]];
+	
+	[mapView addAnnotation:
+	 [[CustomAnnotation alloc]initWithLocationCoordinate:CLLocationCoordinate2DMake(35.657144,139.69732)
+																								 title:@"Yuta's house"
+																							subtitle:@""
+																								 point:42]];
+	
+	//user status view
+	userStatusImageView = [[UIImageView alloc] init];
+	[userStatusImageView setFrame:self.view.frame];
+	userStatusImage = [UIImage imageNamed:@"header.png"];
+	[userStatusImageView setImage:userStatusImage];
+	[self.view addSubview:userStatusImageView];
+	
 }
 
 -(void)loopMethod:(NSTimer*)timer{
@@ -73,7 +98,7 @@
 }
 
 -(void)sendGPS:(double)latitude longitude:(double)longitude{
-	NSURL *loginUrl = [NSURL URLWithString:@"http://172.16.42.52:3000/gps"];
+	NSURL *loginUrl = [NSURL URLWithString:@"http://172.16.42.68/gps"];
 	NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:loginUrl cachePolicy:NSURLRequestUseProtocolCachePolicy timeoutInterval:60.0];
 	
 	[request setHTTPMethod:@"POST"];
@@ -88,12 +113,12 @@
 - (void)locationManager:(CLLocationManager *)manager
 		didUpdateToLocation:(CLLocation *)newLocation
 					 fromLocation:(CLLocation *)oldLocation{
-	NSLog(@"sweet");
+	NSLog(@"locationManager - didUpdateToLocation");
 	// 位置情報取得
 	currentLocation = newLocation;
 	[mapView setCenterCoordinate:newLocation.coordinate animated:YES];
-//	// ロケーションマネージャ停止
-//	[locationManager stopUpdatingLocation];
+	//	// ロケーションマネージャ停止
+	//	[locationManager stopUpdatingLocation];
 }
 
 -(MKAnnotationView*)mapView:(MKMapView*)mapView
@@ -109,7 +134,24 @@
 		
 		if(nil == annotationView) {
 			//再利用可能な MKAnnotationView がなければ新規作成
-			annotationView = [[CustomAnnotationView alloc] initWithAnnotation:annotation reuseIdentifier:identifier];
+			
+			// not working below
+			// annotationView = [[CustomAnnotationView alloc] initWithAnnotation:annotation reuseIdentifier:identifier point:[annotation point]];
+			// random
+			int n = arc4random() % 3;
+			switch (n) {
+				case 0:
+					annotationView = [[CustomAnnotationView alloc] initWithAnnotation:annotation reuseIdentifier:identifier point:50];
+					break;
+				case 1:
+					annotationView = [[CustomAnnotationView alloc] initWithAnnotation:annotation reuseIdentifier:identifier point:100];
+					break;
+				case 2:
+					annotationView = [[CustomAnnotationView alloc] initWithAnnotation:annotation reuseIdentifier:identifier point:500];
+					break;
+				default:
+					break;
+			}
 		}
 		annotationView.annotation = annotation;
 		return annotationView;
@@ -120,5 +162,7 @@
 	[super didReceiveMemoryWarning];
 	// Dispose of any resources that can be recreated.
 }
+
+
 
 @end

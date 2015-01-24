@@ -15,6 +15,8 @@
 	CLLocationManager* locationManager;
 	MKMapView *mapView;
 	CLLocation *currentLocation;
+	UIImageView *userStatusImageView;
+	UIImage *userStatusImage;
 }
 
 

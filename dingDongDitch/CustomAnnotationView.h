@@ -11,5 +11,7 @@
 @interface CustomAnnotationView : MKAnnotationView{
 
 }
-
+- (id)initWithAnnotation:(id <MKAnnotation>)annotation
+				 reuseIdentifier:(NSString *)reuseIdentifier
+									 point:(int) point;
 @end
